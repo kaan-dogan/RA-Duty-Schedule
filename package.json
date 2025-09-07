@@ -1,0 +1,13 @@
+{
+  "name": "thistle-pollock-duty-calendar",
+  "version": "1.0.0",
+  "description": "RA Duty Calendar for Thistle-Pollock Residence",
+  "main": "public/index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": ["calendar", "duty", "ra", "residential-advisor"],
+  "author": "Kaan",
+  "license": "MIT"
+}

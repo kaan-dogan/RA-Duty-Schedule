@@ -6,58 +6,391 @@
   <title>Thistle - Pollock Duty Calendar</title>
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet" />
   <style>
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
-    header{padding:12px 16px;border-bottom:1px solid #e5e7eb;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    header h1{font-size:18px;margin:0}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
-    .controls label{font-size:12px;color:#374151}
-    .controls select,.controls input{padding:6px 8px;border:1px solid #d1d5db;border-radius:6px}
-    #calendar{max-width:1100px;margin:16px auto;padding:0 12px}
-    .fc .fc-toolbar-title{font-weight:600}
-    .legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:#374151;margin-left:auto}
-    .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
-    /* Ensure long titles wrap so all names are visible */
-    .fc-daygrid-event, .fc-timegrid-event, .fc-list-event-title {
-      white-space: normal;
+    :root {
+      /* Light Mode Color Palette */
+      --bg-body: #F8F9FA;
+      --bg-container: #FFFFFF;
+      --bg-header: linear-gradient(135deg, #1E90FF 0%, #4169E1 50%, #6495ED 100%);
+      --bg-header-dark: linear-gradient(135deg, #2D3748 0%, #4A5568 50%, #718096 100%);
+      --bg-control: rgba(255, 255, 255, 0.95);
+      --bg-control-focus: #FFFFFF;
+      --bg-legend: rgba(255, 255, 255, 0.1);
+      --bg-button: linear-gradient(135deg, #1E90FF 0%, #4169E1 100%);
+      --bg-button-hover: rgba(30, 144, 255, 0.3);
+      
+      --text-primary: #000000;
+      --text-secondary: #555555;
+      --text-muted: #9CA3AF;
+      --text-header: #FFFFFF;
+      --text-header-muted: rgba(255, 255, 255, 0.9);
+      
+      --border-light: #DDDDDD;
+      --border-control: rgba(255, 255, 255, 0.2);
+      --border-control-focus: rgba(255, 255, 255, 0.6);
+      
+      --shadow-container: 0 0 50px rgba(0, 0, 0, 0.1);
+      --shadow-header: 0 4px 20px rgba(0, 0, 0, 0.15);
+      --shadow-event: 0 2px 8px rgba(0, 0, 0, 0.1);
+      --shadow-event-hover: 0 4px 12px rgba(0, 0, 0, 0.15);
+      --shadow-dot: 0 2px 6px rgba(0, 0, 0, 0.2);
+      --shadow-button-hover: 0 6px 20px rgba(30, 144, 255, 0.3);
+      
+      --accent-blue: #3B82F6;
+      --accent-green: #10B981;
     }
-    .fc-daygrid-event .fc-event-title, .fc-timegrid-event .fc-event-title {
+    
+    [data-theme="dark"] {
+      /* Dark Mode Color Palette */
+      --bg-body: #0F172A;
+      --bg-container: #1E293B;
+      --bg-header: linear-gradient(135deg, #2D3748 0%, #4A5568 50%, #718096 100%);
+      --bg-control: rgba(51, 65, 85, 0.95);
+      --bg-control-focus: #334155;
+      --bg-legend: rgba(255, 255, 255, 0.05);
+      --bg-button: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+      --bg-button-hover: rgba(59, 130, 246, 0.3);
+      
+      --text-primary: #FFFFFF;
+      --text-secondary: #CBD5E1;
+      --text-muted: #64748B;
+      --text-header: #FFFFFF;
+      --text-header-muted: rgba(255, 255, 255, 0.9);
+      
+      --border-light: #374151;
+      --border-control: rgba(255, 255, 255, 0.1);
+      --border-control-focus: rgba(255, 255, 255, 0.3);
+      
+      --shadow-container: 0 0 50px rgba(0, 0, 0, 0.3);
+      --shadow-header: 0 4px 20px rgba(0, 0, 0, 0.25);
+      --shadow-event: 0 2px 8px rgba(0, 0, 0, 0.2);
+      --shadow-event-hover: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-dot: 0 2px 6px rgba(0, 0, 0, 0.4);
+      --shadow-button-hover: 0 6px 20px rgba(59, 130, 246, 0.4);
+      
+      --accent-blue: #60A5FA;
+      --accent-green: #34D399;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-body);
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .container {
+      background: var(--bg-container);
+      min-height: 100vh;
+      box-shadow: var(--shadow-container);
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    header {
+      background: var(--bg-header);
+      color: var(--text-header);
+      padding: 24px 32px;
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-header);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .controls {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .controls label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-header-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .controls select,
+    .controls input {
+      padding: 10px 14px;
+      border: 2px solid var(--border-control);
+      border-radius: 12px;
+      background: var(--bg-control);
+      backdrop-filter: blur(10px);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      min-width: 140px;
+      color: var(--text-primary);
+    }
+    
+    .controls select:focus,
+    .controls input:focus {
+      outline: none;
+      border-color: var(--border-control-focus);
+      background: var(--bg-control-focus);
+      box-shadow: 0 0 0 3px var(--border-control);
+    }
+    
+    .controls input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .theme-toggle {
+      background: var(--bg-legend);
+      border: 2px solid var(--border-control);
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+      margin-left: auto;
+    }
+    
+    .theme-toggle:hover {
+      background: var(--bg-control);
+      transform: scale(1.1);
+      box-shadow: var(--shadow-event);
+    }
+    
+    .theme-icon {
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
+    
+    [data-theme="dark"] .theme-icon {
+      transform: rotate(180deg);
+    }
+    
+    #calendar {
+      max-width: 1200px;
+      margin: 32px auto;
+      padding: 0 24px 32px;
+    }
+    
+    .fc .fc-toolbar-title {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--text-primary);
+    }
+    
+    .fc .fc-button-primary {
+      background: var(--bg-button);
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 8px 16px;
+      transition: all 0.2s ease;
+    }
+    
+    .fc .fc-button-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-button-hover);
+    }
+    
+    .fc .fc-daygrid-day-number {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    
+    .fc .fc-col-header-cell-cushion {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    
+    .fc-theme-standard .fc-list {
+      background: var(--bg-container);
+    }
+    
+    .fc-theme-standard .fc-list-day-cushion {
+      background: var(--bg-control);
+      color: var(--text-primary);
+    }
+    
+    .fc-theme-standard .fc-list-event:hover td {
+      background: var(--bg-control);
+    }
+    
+    .fc-theme-standard td, 
+    .fc-theme-standard th {
+      border-color: var(--border-light);
+    }
+    
+    .legend {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-header-muted);
+    }
+    
+    .legend span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: var(--bg-legend);
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      transition: background-color 0.3s ease;
+    }
+    
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: var(--shadow-dot);
+    }
+    
+    /* Enhanced calendar event styling */
+    .fc-daygrid-event,
+    .fc-timegrid-event,
+    .fc-list-event-title {
+      white-space: normal;
+      border-radius: 8px;
+      border: none !important;
+      font-weight: 500;
+      box-shadow: var(--shadow-event);
+      transition: all 0.2s ease;
+    }
+    
+    .fc-daygrid-event:hover,
+    .fc-timegrid-event:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-event-hover);
+    }
+    
+    .fc-daygrid-event .fc-event-title,
+    .fc-timegrid-event .fc-event-title {
       white-space: normal;
       overflow: visible;
+      font-weight: 600;
     }
+    
     .fc-daygrid-event {
       height: auto;
-      line-height: 1.2;
+      line-height: 1.3;
+      padding: 2px 6px;
+      margin: 1px 2px;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      header {
+        padding: 20px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+      
+      header h1 {
+        font-size: 20px;
+        text-align: center;
+      }
+      
+      .controls {
+        justify-content: center;
+        gap: 12px;
+      }
+      
+      .controls label {
+        text-align: center;
+      }
+      
+      .legend {
+        justify-content: center;
+        margin-left: 0;
+        gap: 12px;
+      }
+      
+      #calendar {
+        padding: 0 16px 24px;
+        margin: 24px auto;
+      }
+      
+      .controls select,
+      .controls input {
+        min-width: 120px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .controls {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .controls label {
+        width: 100%;
+      }
+      
+      .controls select,
+      .controls input {
+        width: 100%;
+        min-width: unset;
+      }
+      
+      .legend {
+        flex-direction: column;
+        align-items: center;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Thistle - Pollock Duty Calendar</h1>
-    <div class="controls">
-      <label>View
-        <select id="viewSelect">
-          <option value="dayGridMonth">Month</option>
-          <option value="timeGridWeek">Week</option>
-          <option value="listWeek">List</option>
-        </select>
-      </label>
-      <label>Filter: Duty Type
-        <select id="typeFilter">
-          <option value="">All</option>
-          <option value="RA On Call">RA On Call</option>
-          <option value="PG Only Duty">PG Only Duty</option>
-        </select>
-      </label>
-      <label>Search Name
-        <input id="nameSearch" placeholder="e.g., Kaan" />
-      </label>
-    </div>
-    <div class="legend">
-      <span><span class="dot" style="background:#3b82f6"></span>RA On Call</span>
-      <span><span class="dot" style="background:#10b981"></span>PG Only Duty</span>
-    </div>
-  </header>
-  <div id="calendar"></div>
+  <div class="container">
+    <header>
+      <h1>Thistle - Pollock Duty Calendar</h1>
+      <div class="controls">
+        <label>View
+          <select id="viewSelect">
+            <option value="dayGridMonth">Month</option>
+            <option value="timeGridWeek">Week</option>
+            <option value="listWeek">List</option>
+          </select>
+        </label>
+        <label>Filter: Duty Type
+          <select id="typeFilter">
+            <option value="">All</option>
+            <option value="RA On Call">RA On Call</option>
+            <option value="PG Only Duty">PG Only Duty</option>
+          </select>
+        </label>
+        <label>Search Name
+          <input id="nameSearch" placeholder="e.g., Kaan" />
+        </label>
+      </div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--accent-blue)"></span>RA On Call</span>
+        <span><span class="dot" style="background:var(--accent-green)"></span>PG Only Duty</span>
+      </div>
+      <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">
+        <span class="theme-icon">🌙</span>
+      </button>
+    </header>
+    <div id="calendar"></div>
+  </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="./main.js"></script>

@@ -1,10 +1,33 @@
 (() => {
   const csvPath = "./Thistle - Pollock Duty Calendar.csv";
+  
+  // Theme management
+  const initTheme = () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
+  };
+  
+  const updateThemeIcon = (theme) => {
+    const themeIcon = document.querySelector('.theme-icon');
+    if (themeIcon) {
+      themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+    }
+  };
+  
+  const toggleTheme = () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+  };
 
   const typeColor = (type) => {
-    if (!type) return "#6b7280";
-    if (type.includes("PG Only Duty")) return "#10b981";
-    return "#3b82f6"; // RA default
+    if (!type) return "var(--text-muted)";
+    if (type.includes("PG Only Duty")) return "var(--accent-green)";
+    return "var(--accent-blue)"; // RA default
   };
 
   const parseDate = (s) => {
@@ -96,6 +119,15 @@
     typeFilterEl.addEventListener("change", applyFilters);
     nameSearchEl.addEventListener("input", applyFilters);
     viewSelectEl.addEventListener("change", () => calendar.changeView(viewSelectEl.value));
+    
+    // Setup theme toggle
+    const themeToggle = document.getElementById("themeToggle");
+    if (themeToggle) {
+      themeToggle.addEventListener("click", toggleTheme);
+    }
+    
+    // Initialize theme
+    initTheme();
   };
 
   window.addEventListener("DOMContentLoaded", bootstrap);

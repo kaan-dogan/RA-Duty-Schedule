@@ -4,7 +4,7 @@
   "description": "RA Duty Calendar for Thistle-Pollock Residence",
   "main": "public/index.html",
   "scripts": {
-    "dev": "vercel dev",
+    "dev": "python3 -m http.server 3000 --directory public",
     "build": "echo 'Static site - no build needed'"
   },
   "keywords": ["calendar", "duty", "ra", "residential-advisor"],

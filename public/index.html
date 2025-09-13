@@ -357,6 +357,25 @@
       }
     }
   </style>
+  <style>
+    /* Export button styling */
+    .export-btn {
+      background: var(--bg-button);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-event);
+      transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    }
+    .export-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-button-hover);
+      opacity: 0.95;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -377,6 +396,11 @@
             <option value="PG Only Duty">PG Only Duty</option>
           </select>
         </label>
+        <label>Person
+          <select id="personSelect">
+            <option value="">All</option>
+          </select>
+        </label>
         <label>Search Name
           <input id="nameSearch" placeholder="e.g., Kaan" />
         </label>
@@ -384,6 +408,9 @@
       <div class="legend">
         <span><span class="dot" style="background:var(--accent-blue)"></span>RA On Call</span>
         <span><span class="dot" style="background:var(--accent-green)"></span>PG Only Duty</span>
+      </div>
+      <div class="controls" style="margin-left:auto;">
+        <button id="exportIcs" class="export-btn" title="Export filtered events to .ics">Export .ics</button>
       </div>
       <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">
         <span class="theme-icon">🌙</span>

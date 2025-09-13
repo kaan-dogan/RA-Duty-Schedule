@@ -48,14 +48,81 @@
     });
   });
 
-  const filterEvents = (events, typeFilter, nameQuery) => {
+  const filterEvents = (events, typeFilter, nameQuery, personFilter) => {
     const q = (nameQuery || "").trim().toLowerCase();
+    const pf = (personFilter || "").trim().toLowerCase();
     return events.filter((ev) => {
       const passType = !typeFilter || (ev.extendedProps.dutyType || "").includes(typeFilter);
       const blob = [ev.title, ev.extendedProps.assignedTo, ev.extendedProps.dutyType].join(" ").toLowerCase();
       const passName = !q || blob.includes(q);
-      return passType && passName;
+      const passPerson = !pf || (ev.extendedProps.assignedTo || "").toLowerCase().includes(pf);
+      return passType && passName && passPerson;
     });
+  };
+
+  // ---- ICS Export helpers ----
+  const formatICSDate = (date) => {
+    // Returns UTC timestamp in YYYYMMDDTHHMMSSZ
+    return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  };
+
+  const icsEscape = (s) => {
+    return String(s || "")
+      .replace(/\\/g, "\\\\")
+      .replace(/\n/g, "\\n")
+      .replace(/,/g, "\\,")
+      .replace(/;/g, "\\;");
+  };
+
+  const buildIcs = (events) => {
+    const lines = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//RA Duty//Calendar Export//EN",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+    ];
+
+    const now = new Date();
+    const dtstamp = formatICSDate(now);
+
+    events.forEach((ev) => {
+      const uid = `${ev.start.getTime()}-${Math.random().toString(36).slice(2)}@ra-duty`;
+      const summary = icsEscape(ev.title);
+      const descParts = [];
+      if (ev.extendedProps?.dutyType) descParts.push(`Type: ${ev.extendedProps.dutyType}`);
+      if (ev.extendedProps?.assignedTo) descParts.push(`Assigned: ${ev.extendedProps.assignedTo}`);
+      if (ev.extendedProps?.complete) descParts.push(`Complete: ${ev.extendedProps.complete}`);
+      const description = icsEscape(descParts.join("\n"));
+
+      lines.push(
+        "BEGIN:VEVENT",
+        `UID:${uid}`,
+        `DTSTAMP:${dtstamp}`,
+        `DTSTART:${formatICSDate(ev.start)}`,
+        `DTEND:${formatICSDate(ev.end)}`,
+        `SUMMARY:${summary}`,
+        description ? `DESCRIPTION:${description}` : undefined,
+        "END:VEVENT"
+      );
+    });
+
+    lines.push("END:VCALENDAR");
+    return lines.filter(Boolean).join("\r\n");
+  };
+
+  const downloadIcs = (filename, content) => {
+    const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 0);
   };
 
   const bootstrap = async () => {
@@ -108,16 +175,46 @@
 
     const typeFilterEl = document.getElementById("typeFilter");
     const nameSearchEl = document.getElementById("nameSearch");
+    const personSelectEl = document.getElementById("personSelect");
+    
+    // Populate person list from CSV
+    const people = Array.from(new Set(
+      eventsRaw
+        .map(e => (e.extendedProps.assignedTo || "").trim())
+        .filter(Boolean)
+    )).sort((a, b) => a.localeCompare(b));
+    if (personSelectEl) {
+      const saved = localStorage.getItem('selectedPerson') || '';
+      people.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        personSelectEl.appendChild(opt);
+      });
+      // Restore previous selection if present
+      personSelectEl.value = saved;
+    }
     const viewSelectEl = document.getElementById("viewSelect");
 
     const applyFilters = () => {
-      const filtered = filterEvents(eventsRaw, typeFilterEl.value, nameSearchEl.value);
+      const filtered = filterEvents(
+        eventsRaw,
+        typeFilterEl.value,
+        nameSearchEl.value,
+        personSelectEl ? personSelectEl.value : ''
+      );
       calendar.removeAllEvents();
       calendar.addEventSource(filtered);
     };
 
     typeFilterEl.addEventListener("change", applyFilters);
     nameSearchEl.addEventListener("input", applyFilters);
+    if (personSelectEl) {
+      personSelectEl.addEventListener("change", () => {
+        localStorage.setItem('selectedPerson', personSelectEl.value);
+        applyFilters();
+      });
+    }
     viewSelectEl.addEventListener("change", () => calendar.changeView(viewSelectEl.value));
     
     // Setup theme toggle
@@ -128,6 +225,26 @@
     
     // Initialize theme
     initTheme();
+
+    // Export to ICS
+    const exportBtn = document.getElementById("exportIcs");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", () => {
+        const filtered = filterEvents(
+          eventsRaw,
+          typeFilterEl.value,
+          nameSearchEl.value,
+          personSelectEl ? personSelectEl.value : ''
+        );
+        const ics = buildIcs(filtered);
+        const suffix = [];
+        if (typeFilterEl.value) suffix.push(typeFilterEl.value.replace(/\s+/g, "-"));
+        if (personSelectEl && personSelectEl.value) suffix.push(personSelectEl.value.trim().replace(/\s+/g, "-"));
+        else if (nameSearchEl.value) suffix.push(nameSearchEl.value.trim().replace(/\s+/g, "-"));
+        const filename = `duty-calendar${suffix.length ? "-" + suffix.join("-") : ""}.ics`;
+        downloadIcs(filename, ics);
+      });
+    }
   };
 
   window.addEventListener("DOMContentLoaded", bootstrap);

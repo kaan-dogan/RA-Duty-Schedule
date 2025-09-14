@@ -271,9 +271,10 @@
       exportCancel.addEventListener("click", closeExportModal);
     }
     if (exportModal) {
-      // Close when clicking on backdrop
+      // Close when clicking on backdrop or outside content
       exportModal.addEventListener('click', (e) => {
-        if (e.target === exportModal.querySelector('.modal-backdrop')) {
+        const backdrop = exportModal.querySelector('.modal-backdrop');
+        if (e.target === exportModal || e.target === backdrop || e.target.classList.contains('modal-backdrop')) {
           closeExportModal();
         }
       });

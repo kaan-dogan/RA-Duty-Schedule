@@ -379,7 +379,9 @@
   <style>
     /* Simple modal */
     .hidden { display: none; }
-    .modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 50; }
+    /* Default hidden to avoid class order conflicts */
+    .modal { position: fixed; inset: 0; display: none; place-items: center; z-index: 50; }
+    .modal[aria-hidden="false"] { display: grid; }
     .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
     .modal-content {
       position: relative;

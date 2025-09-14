@@ -48,6 +48,18 @@
     });
   });
 
+  // Extract list of people from a title like: "RA On Call: A, B, C"
+  const extractPeopleFromTitle = (title) => {
+    if (!title) return [];
+    const parts = String(title).split(":");
+    if (parts.length < 2) return [];
+    const afterColon = parts.slice(1).join(":");
+    return afterColon
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+  };
+
   const filterEvents = (events, typeFilter, nameQuery, personFilter) => {
     const q = (nameQuery || "").trim().toLowerCase();
     const pf = (personFilter || "").trim().toLowerCase();
@@ -55,7 +67,8 @@
       const passType = !typeFilter || (ev.extendedProps.dutyType || "").includes(typeFilter);
       const blob = [ev.title, ev.extendedProps.assignedTo, ev.extendedProps.dutyType].join(" ").toLowerCase();
       const passName = !q || blob.includes(q);
-      const passPerson = !pf || (ev.extendedProps.assignedTo || "").toLowerCase().includes(pf);
+      const personList = ev.extendedProps.personList || [];
+      const passPerson = !pf || personList.some(p => p.toLowerCase() === pf || p.toLowerCase().includes(pf));
       return passType && passName && passPerson;
     });
   };
@@ -134,6 +147,9 @@
         const end = parseDate(r.End.trim());
         const dutyType = (r["Duty Type"] || "").replace(/\[|\]|"/g, "").trim();
         const assignedTo = (r["Assigned To"] || "").trim();
+        const personList = assignedTo
+          ? assignedTo.split(',').map(s => s.trim()).filter(Boolean)
+          : extractPeopleFromTitle(r.Title);
         const complete = (r["Duty Complete"] || "").trim();
         return {
           title: r.Title,
@@ -141,7 +157,7 @@
           end,
           backgroundColor: typeColor(dutyType),
           borderColor: typeColor(dutyType),
-          extendedProps: { dutyType, assignedTo, complete },
+          extendedProps: { dutyType, assignedTo, complete, personList },
         };
       });
 
@@ -179,9 +195,7 @@
     
     // Populate person list from CSV
     const people = Array.from(new Set(
-      eventsRaw
-        .map(e => (e.extendedProps.assignedTo || "").trim())
-        .filter(Boolean)
+      eventsRaw.flatMap(e => (e.extendedProps.personList || []))
     )).sort((a, b) => a.localeCompare(b));
     if (personSelectEl) {
       const saved = localStorage.getItem('selectedPerson') || '';

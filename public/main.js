@@ -189,8 +189,7 @@
 
     calendar.render();
 
-    const typeFilterEl = document.getElementById("typeFilter");
-    const nameSearchEl = document.getElementById("nameSearch");
+    // Removed type filter and name search
     const personInputEl = document.getElementById("personInput");
     const peopleListEl = document.getElementById("peopleList");
     
@@ -211,21 +210,20 @@
       const saved = localStorage.getItem('selectedPerson') || '';
       personInputEl.value = saved;
     }
-    const viewSelectEl = document.getElementById("viewSelect");
+    // No view select (use calendar's built-in header buttons)
 
     const applyFilters = () => {
       const filtered = filterEvents(
         eventsRaw,
-        typeFilterEl.value,
-        nameSearchEl.value,
+        '',
+        '',
         personInputEl ? personInputEl.value : ''
       );
       calendar.removeAllEvents();
       calendar.addEventSource(filtered);
     };
 
-    typeFilterEl.addEventListener("change", applyFilters);
-    nameSearchEl.addEventListener("input", applyFilters);
+    // Apply filters on typing person name
     if (personInputEl) {
       const persistAndFilter = () => {
         localStorage.setItem('selectedPerson', personInputEl.value);
@@ -234,7 +232,7 @@
       personInputEl.addEventListener("input", persistAndFilter);
       personInputEl.addEventListener("change", persistAndFilter);
     }
-    viewSelectEl.addEventListener("change", () => calendar.changeView(viewSelectEl.value));
+    // No custom view selector
     
     // Setup theme toggle
     const themeToggle = document.getElementById("themeToggle");
@@ -294,15 +292,13 @@
         const selectedForExport = exportPersonInput ? exportPersonInput.value : '';
         const filtered = filterEvents(
           eventsRaw,
-          typeFilterEl.value,
-          nameSearchEl.value,
+          '',
+          '',
           selectedForExport
         );
         const ics = buildIcs(filtered);
         const suffix = [];
-        if (typeFilterEl.value) suffix.push(typeFilterEl.value.replace(/\s+/g, "-"));
         if (selectedForExport) suffix.push(selectedForExport.trim().replace(/\s+/g, "-"));
-        else if (nameSearchEl.value) suffix.push(nameSearchEl.value.trim().replace(/\s+/g, "-"));
         const filename = `duty-calendar${suffix.length ? "-" + suffix.join("-") : ""}.ics`;
         downloadIcs(filename, ics);
         closeExportModal();

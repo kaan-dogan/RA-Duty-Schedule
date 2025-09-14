@@ -409,31 +409,11 @@
     <header>
       <h1>Thistle - Pollock Duty Calendar</h1>
       <div class="controls">
-        <label>View
-          <select id="viewSelect">
-            <option value="dayGridMonth">Month</option>
-            <option value="timeGridWeek">Week</option>
-            <option value="listWeek">List</option>
-          </select>
-        </label>
-        <label>Filter: Duty Type
-          <select id="typeFilter">
-            <option value="">All</option>
-            <option value="RA On Call">RA On Call</option>
-            <option value="PG Only Duty">PG Only Duty</option>
-          </select>
-        </label>
         <label>Person
           <input id="personInput" list="peopleList" placeholder="All (type to search)" />
         </label>
-        <label>Search Name
-          <input id="nameSearch" placeholder="e.g., Kaan" />
-        </label>
       </div>
-      <div class="legend">
-        <span><span class="dot" style="background:var(--accent-blue)"></span>RA On Call</span>
-        <span><span class="dot" style="background:var(--accent-green)"></span>PG Only Duty</span>
-      </div>
+      
       <div class="controls" style="margin-left:auto;">
         <button id="exportIcs" class="export-btn" title="Export filtered events to your calendar">Export to Calendar</button>
       </div>

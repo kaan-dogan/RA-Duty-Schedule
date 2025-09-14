@@ -376,6 +376,31 @@
       opacity: 0.95;
     }
   </style>
+  <style>
+    /* Simple modal */
+    .hidden { display: none; }
+    .modal { position: fixed; inset: 0; display: grid; place-items: center; z-index: 50; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.4); }
+    .modal-content {
+      position: relative;
+      background: var(--bg-container);
+      color: var(--text-primary);
+      border: 1px solid var(--border-light);
+      border-radius: 16px;
+      box-shadow: var(--shadow-container);
+      width: min(420px, 92vw);
+      padding: 20px;
+      z-index: 51;
+    }
+    .modal-content h2 { margin: 0 0 4px 0; font-size: 18px; }
+    .modal-subtitle { margin: 0 0 12px 0; color: var(--text-secondary); font-size: 13px; }
+    .modal-field { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin: 8px 0 16px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-primary { background: var(--bg-button); color: #fff; border: none; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; box-shadow: var(--shadow-event); }
+    .btn-primary:hover { box-shadow: var(--shadow-button-hover); transform: translateY(-1px); }
+    .btn-secondary { background: var(--bg-control); color: var(--text-primary); border: 1px solid var(--border-light); border-radius: 10px; padding: 10px 14px; font-weight: 600; cursor: pointer; }
+    .btn-secondary:hover { background: var(--bg-control-focus); }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -410,13 +435,30 @@
         <span><span class="dot" style="background:var(--accent-green)"></span>PG Only Duty</span>
       </div>
       <div class="controls" style="margin-left:auto;">
-        <button id="exportIcs" class="export-btn" title="Export filtered events to .ics">Export .ics</button>
+        <button id="exportIcs" class="export-btn" title="Export filtered events to your calendar">Export to Calendar</button>
       </div>
       <button id="themeToggle" class="theme-toggle" title="Toggle dark/light mode">
         <span class="theme-icon">🌙</span>
       </button>
     </header>
     <div id="calendar"></div>
+    <!-- Export Modal -->
+    <div id="exportModal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="exportTitle">
+      <div class="modal-backdrop"></div>
+      <div class="modal-content" role="document">
+        <h2 id="exportTitle">Export to Calendar</h2>
+        <p class="modal-subtitle">Choose who to export for.</p>
+        <label class="modal-field">Person
+          <select id="exportPersonSelect">
+            <option value="">All</option>
+          </select>
+        </label>
+        <div class="modal-actions">
+          <button id="exportCancel" class="btn-secondary" type="button">Cancel</button>
+          <button id="exportConfirm" class="btn-primary" type="button">Export</button>
+        </div>
+      </div>
+    </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>

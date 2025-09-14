@@ -226,23 +226,75 @@
     // Initialize theme
     initTheme();
 
-    // Export to ICS
+    // Export to Calendar (ICS) via modal prompt
     const exportBtn = document.getElementById("exportIcs");
+    const exportModal = document.getElementById("exportModal");
+    const exportPersonSelect = document.getElementById("exportPersonSelect");
+    const exportCancel = document.getElementById("exportCancel");
+    const exportConfirm = document.getElementById("exportConfirm");
+
+    const openExportModal = () => {
+      if (!exportModal) return;
+      // Populate options if empty or needs refresh
+      if (exportPersonSelect && exportPersonSelect.childElementCount <= 1) {
+        people.forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          exportPersonSelect.appendChild(opt);
+        });
+      }
+      // Prefill with current person filter if any
+      if (exportPersonSelect && personSelectEl) {
+        exportPersonSelect.value = personSelectEl.value || '';
+      }
+      exportModal.classList.remove('hidden');
+      exportModal.setAttribute('aria-hidden', 'false');
+      const onKey = (e) => { if (e.key === 'Escape') { closeExportModal(); } };
+      exportModal._escHandler = onKey;
+      document.addEventListener('keydown', onKey);
+    };
+    const closeExportModal = () => {
+      if (!exportModal) return;
+      exportModal.classList.add('hidden');
+      exportModal.setAttribute('aria-hidden', 'true');
+      if (exportModal._escHandler) {
+        document.removeEventListener('keydown', exportModal._escHandler);
+        delete exportModal._escHandler;
+      }
+    };
+
     if (exportBtn) {
-      exportBtn.addEventListener("click", () => {
+      exportBtn.addEventListener("click", openExportModal);
+    }
+    if (exportCancel) {
+      exportCancel.addEventListener("click", closeExportModal);
+    }
+    if (exportModal) {
+      // Close when clicking on backdrop
+      exportModal.addEventListener('click', (e) => {
+        if (e.target === exportModal.querySelector('.modal-backdrop')) {
+          closeExportModal();
+        }
+      });
+    }
+    if (exportConfirm) {
+      exportConfirm.addEventListener('click', () => {
+        const selectedForExport = exportPersonSelect ? exportPersonSelect.value : '';
         const filtered = filterEvents(
           eventsRaw,
           typeFilterEl.value,
           nameSearchEl.value,
-          personSelectEl ? personSelectEl.value : ''
+          selectedForExport
         );
         const ics = buildIcs(filtered);
         const suffix = [];
         if (typeFilterEl.value) suffix.push(typeFilterEl.value.replace(/\s+/g, "-"));
-        if (personSelectEl && personSelectEl.value) suffix.push(personSelectEl.value.trim().replace(/\s+/g, "-"));
+        if (selectedForExport) suffix.push(selectedForExport.trim().replace(/\s+/g, "-"));
         else if (nameSearchEl.value) suffix.push(nameSearchEl.value.trim().replace(/\s+/g, "-"));
         const filename = `duty-calendar${suffix.length ? "-" + suffix.join("-") : ""}.ics`;
         downloadIcs(filename, ics);
+        closeExportModal();
       });
     }
   };

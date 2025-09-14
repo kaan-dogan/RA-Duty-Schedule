@@ -191,22 +191,25 @@
 
     const typeFilterEl = document.getElementById("typeFilter");
     const nameSearchEl = document.getElementById("nameSearch");
-    const personSelectEl = document.getElementById("personSelect");
+    const personInputEl = document.getElementById("personInput");
+    const peopleListEl = document.getElementById("peopleList");
     
     // Populate person list from CSV
     const people = Array.from(new Set(
       eventsRaw.flatMap(e => (e.extendedProps.personList || []))
     )).sort((a, b) => a.localeCompare(b));
-    if (personSelectEl) {
-      const saved = localStorage.getItem('selectedPerson') || '';
+    // Populate datalist for both header and modal
+    if (peopleListEl) {
+      peopleListEl.innerHTML = '';
       people.forEach(name => {
         const opt = document.createElement('option');
         opt.value = name;
-        opt.textContent = name;
-        personSelectEl.appendChild(opt);
+        peopleListEl.appendChild(opt);
       });
-      // Restore previous selection if present
-      personSelectEl.value = saved;
+    }
+    if (personInputEl) {
+      const saved = localStorage.getItem('selectedPerson') || '';
+      personInputEl.value = saved;
     }
     const viewSelectEl = document.getElementById("viewSelect");
 
@@ -215,7 +218,7 @@
         eventsRaw,
         typeFilterEl.value,
         nameSearchEl.value,
-        personSelectEl ? personSelectEl.value : ''
+        personInputEl ? personInputEl.value : ''
       );
       calendar.removeAllEvents();
       calendar.addEventSource(filtered);
@@ -223,11 +226,13 @@
 
     typeFilterEl.addEventListener("change", applyFilters);
     nameSearchEl.addEventListener("input", applyFilters);
-    if (personSelectEl) {
-      personSelectEl.addEventListener("change", () => {
-        localStorage.setItem('selectedPerson', personSelectEl.value);
+    if (personInputEl) {
+      const persistAndFilter = () => {
+        localStorage.setItem('selectedPerson', personInputEl.value);
         applyFilters();
-      });
+      };
+      personInputEl.addEventListener("input", persistAndFilter);
+      personInputEl.addEventListener("change", persistAndFilter);
     }
     viewSelectEl.addEventListener("change", () => calendar.changeView(viewSelectEl.value));
     
@@ -243,24 +248,15 @@
     // Export to Calendar (ICS) via modal prompt
     const exportBtn = document.getElementById("exportIcs");
     const exportModal = document.getElementById("exportModal");
-    const exportPersonSelect = document.getElementById("exportPersonSelect");
+    const exportPersonInput = document.getElementById("exportPersonInput");
     const exportCancel = document.getElementById("exportCancel");
     const exportConfirm = document.getElementById("exportConfirm");
 
     const openExportModal = () => {
       if (!exportModal) return;
-      // Populate options if empty or needs refresh
-      if (exportPersonSelect && exportPersonSelect.childElementCount <= 1) {
-        people.forEach(name => {
-          const opt = document.createElement('option');
-          opt.value = name;
-          opt.textContent = name;
-          exportPersonSelect.appendChild(opt);
-        });
-      }
       // Prefill with current person filter if any
-      if (exportPersonSelect && personSelectEl) {
-        exportPersonSelect.value = personSelectEl.value || '';
+      if (exportPersonInput && personInputEl) {
+        exportPersonInput.value = personInputEl.value || '';
       }
       exportModal.classList.remove('hidden');
       exportModal.setAttribute('aria-hidden', 'false');
@@ -295,7 +291,7 @@
     }
     if (exportConfirm) {
       exportConfirm.addEventListener('click', () => {
-        const selectedForExport = exportPersonSelect ? exportPersonSelect.value : '';
+        const selectedForExport = exportPersonInput ? exportPersonInput.value : '';
         const filtered = filterEvents(
           eventsRaw,
           typeFilterEl.value,

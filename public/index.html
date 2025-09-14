@@ -424,9 +424,7 @@
           </select>
         </label>
         <label>Person
-          <select id="personSelect">
-            <option value="">All</option>
-          </select>
+          <input id="personInput" list="peopleList" placeholder="All (type to search)" />
         </label>
         <label>Search Name
           <input id="nameSearch" placeholder="e.g., Kaan" />
@@ -451,9 +449,7 @@
         <h2 id="exportTitle">Export to Calendar</h2>
         <p class="modal-subtitle">Choose who to export for.</p>
         <label class="modal-field">Person
-          <select id="exportPersonSelect">
-            <option value="">All</option>
-          </select>
+          <input id="exportPersonInput" list="peopleList" placeholder="All (type to search)" />
         </label>
         <div class="modal-actions">
           <button id="exportCancel" class="btn-secondary" type="button">Cancel</button>
@@ -462,6 +458,8 @@
       </div>
     </div>
   </div>
+  <!-- Shared datalist for person autocomplete -->
+  <datalist id="peopleList"></datalist>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
   <script src="./main.js"></script>

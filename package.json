@@ -5,9 +5,18 @@
   "main": "public/index.html",
   "scripts": {
     "dev": "python3 -m http.server 3000 --directory public",
-    "build": "echo 'Static site - no build needed'"
+    "build": "echo 'Static site - no build needed'",
+    "test": "python3 -m unittest discover -s tests"
   },
-  "keywords": ["calendar", "duty", "ra", "residential-advisor"],
+  "keywords": [
+    "calendar",
+    "duty",
+    "ra",
+    "residential-advisor"
+  ],
   "author": "Kaan",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/analytics": "^1.5.0"
+  }
 }
